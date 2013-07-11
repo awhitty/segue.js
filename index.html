@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+	<title>Segue.js</title>
+
+	<!-- Dependencies -->
+	<script src="//cdnjs.cloudflare.com/ajax/libs/zepto/1.0/zepto.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/hammer.js/1.0.5/hammer.js"></script>
+
+	<!-- Segue -->
+	<script src="segue.js"></script>
+
+	<!-- Simple styles -->
+	<style>
+		body {
+			font-family: Helvetica;
+			padding: 0;
+			margin: 0;
+		}
+	
+		.animate {
+			-webkit-transition: .3s all;
+		}
+
+		.drag {
+			display: block;
+			padding: 100px 0;
+			margin: 60px 0;
+			width: 400px;
+			text-align: center;
+
+			-webkit-transform: translate3d(0,0,0) scale3d(1,1,1);
+		}
+
+		.green { background: #4DD35E; color: white; }
+		.blue { background: #2F5287; color: white; }
+		.red { background: #C0413A; color: white; }
+	</style>
+
+	<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+</head>
+<body>
+	<div id="fader" class="drag blue">
+		<h1>Fade me</h1>
+	</div>
+
+	<div id="slider" class="drag red">
+		<h1>Drag me</h1>
+	</div>
+
+	<div id="drag-fade" class="drag green">
+		<h1>Drag, fade, and scale me!</h1>
+	</div>
+
+
+	<script>
+		var fader = document.getElementById('fader');
+		var slider = document.getElementById('slider');
+		var drag_fade = document.getElementById('drag-fade');
+
+		var state = 0;
+
+		Segue(fader, {
+			max: 400,
+			toggle_on_tap: true,
+			manipulator: fadeElement,
+		})
+
+		Segue(slider, {
+			max: 400,
+			manipulator: dragElement,
+		})
+
+		Segue(drag_fade, {
+			max: 400,
+			manipulator: dragScaleAndFadeElement,
+		})
+
+		function fadeElement(percent, offset, animate, element) {
+			$(element).removeClass('animate');
+
+			if (animate) $(element).addClass('animate');
+
+			// $(element).css('-webkit-transform', 'translate3d(0,'+(percent + offset)*100+'%,0)');
+			$(element).css('opacity', percent + offset + .2);
+		}
+
+		function dragElement(percent, offset, animate, element) {
+			$(element).removeClass('animate');
+
+			if (animate) $(element).addClass('animate');
+
+			$(element).css('-webkit-transform', 'translate3d('+(percent + offset)*100+'%,0,0)');
+		}
+
+		function dragScaleAndFadeElement(percent, offset, animate, element) {
+			$(element).removeClass('animate');
+
+			if (animate) $(element).addClass('animate');
+
+			$(element).css('-webkit-transform', 'translate3d('+(percent + offset)*100+'%,0,0) scale3d('+(percent*.2 + offset*.2 + .8)+','+(percent*.2 + offset*.2 + .8)+',1)');
+			$(element).css('opacity', percent + offset + .2);
+			console.log('translate3d('+(percent + offset)*100+'%,0,0), scale3d('+(percent + offset + 1)+',1,1)')
+		}
+
+		$(document).bind('touchmove', false);
+	</script>
+</body>
+</html>
