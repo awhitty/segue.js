@@ -12,9 +12,13 @@ function Segue(element, options) {
     max = options.max || 100,
     complete = (options.complete != undefined) ? options.complete : true, // might be a better way to do this?
     toggle_on_tap = (options.toggle_on_tap != undefined) ? options.toggle_on_tap : false,
-    orientation = (options.orientation) || 'horizontal';
+    orientation = (options.orientation) || 'horizontal',
+    states = options.states - 1 || 1,
+    initial_state = options.initial_state || 0;
 
-  var state = 0;
+  var state = initial_state;
+
+  console.log(state)
 
   function handleDrag(ev) {
     ev.gesture.preventDefault();
@@ -45,16 +49,29 @@ function Segue(element, options) {
     manipulator(percent, state, false, element)
   }
 
+  function nextState() {
+    if (state < states) state++;
+  }
+
+  function prevState() {
+    if (state > 0) state--;
+  }
+
+  function cycleState() {
+    if (state < states) state++;
+    else state = 0;
+  }
+
   function handleComplete(ev) {
     if (ev) {
       switch(ev.type) {
         case 'swipe':
           if (orientation == 'vertical') {
-            if (ev.gesture.direction == 'up') state = 0;
-            if (ev.gesture.direction == 'down') state = 1;
+            if (ev.gesture.direction == 'up') prevState();
+            if (ev.gesture.direction == 'down') nextState();
           } else {
-            if (ev.gesture.direction == 'left') state = 0;
-            if (ev.gesture.direction == 'right') state = 1;
+            if (ev.gesture.direction == 'left') prevState();
+            if (ev.gesture.direction == 'right') nextState();
           }
 
           ev.gesture.stopDetect();
@@ -64,19 +81,25 @@ function Segue(element, options) {
         case 'release':
           var percent = ev.gesture.distance / (max - min);
 
-          if (percent >= .5) state = Math.abs(state - 1);
-          else state = state;
+          if (percent >= .5) {
+            if (orientation == 'vertical') {
+              if (ev.gesture.direction == 'up') prevState();
+              if (ev.gesture.direction == 'down') nextState();
+            } else {
+              if (ev.gesture.direction == 'left') prevState();
+              if (ev.gesture.direction == 'right') nextState();
+            }
+          }
 
           break;
       }
     }
 
-    if (options.complete) options.complete(state);
     manipulator(state, 0, true, element);
   }
 
   function handleToggle() {
-    state = Math.abs(state - 1);
+    cycleState();
     handleComplete();
   }
 
@@ -84,8 +107,10 @@ function Segue(element, options) {
     Hammer(element).on('drag', handleDrag);
 
 
-    if (complete) Hammer(element).on('swipe release', handleComplete);
+    Hammer(element).on('swipe release', handleComplete);
     if (toggle_on_tap) Hammer(element).on('tap', handleToggle);
+
+    handleComplete();
   }
 
   setup();
